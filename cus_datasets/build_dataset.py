@@ -2,6 +2,7 @@ from cus_datasets.ucf.load_data import build_ucf_dataset
 from cus_datasets.ava.load_data import build_ava_dataset
 from cus_datasets.jhmdb.load_data import build_jhmdb_dataset
 from cus_datasets.ucf_crime.load_data import build_ucfcrime_dataset
+from cus_datasets.etri.load_data import build_etri_dataset
 
 def build_dataset(config, phase):
     dataset = config['dataset']
@@ -14,3 +15,5 @@ def build_dataset(config, phase):
         return build_jhmdb_dataset(config, phase)
     elif dataset == 'ucfcrime':
         return build_ucfcrime_dataset(config, phase)
+    elif dataset == 'etri':
+        return build_etri_dataset(config, phase)
