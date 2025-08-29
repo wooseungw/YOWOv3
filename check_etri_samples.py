@@ -92,6 +92,7 @@ def main():
     print(f"Dataset size (indices): {len(dataset)}")
     n = min(args.num, len(dataset))
     for i in range(n):
+        i = i * 30
         # unravel to get metadata
         sample_idx, key_idx = index[i]
         rec = samples[sample_idx]
