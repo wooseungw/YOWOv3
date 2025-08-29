@@ -1,3 +1,7 @@
+import os
+# Enable CPU fallback for unsupported MPS ops (e.g., max_pool3d)
+os.environ.setdefault("PYTORCH_ENABLE_MPS_FALLBACK", "1")
+
 from scripts import train, ava_eval, ucf_eval, detect, live, onnx
 import argparse
 from utils.build_config import build_config
@@ -7,6 +11,7 @@ if __name__ == "__main__":
 
     parser.add_argument('-m', '--mode', type=str, help='train/eval/live/detect/onnx')
     parser.add_argument('-cf', '--config', type=str, help='path to config file')
+    # live-specific source arg removed per user request
 
     args = parser.parse_args()
 

@@ -331,8 +331,13 @@ class InceptionI3d(nn.Module):
         if self.pretrain_path is None:
             return 
         state_dict = self.state_dict()
-
-        pretrain_state_dict = torch.load(self.pretrain_path, weights_only=True)
+        # Ensure checkpoints saved with CUDA tensors can load on CPU-only envs
+        try:
+            pretrain_state_dict = torch.load(self.pretrain_path, map_location='cpu', weights_only=True)
+        except TypeError:
+            pretrain_state_dict = torch.load(self.pretrain_path, map_location='cpu')
+        except Exception:
+            pretrain_state_dict = torch.load(self.pretrain_path, map_location='cpu')
         for param_name, value in pretrain_state_dict.items():
             if param_name not in state_dict:
                 continue

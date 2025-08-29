@@ -104,7 +104,8 @@ class ClassificationModel(torch.nn.Module):
     
     def load_pretrain(self, pretrain_yowov3):
         state_dict = self.state_dict()
-        pretrain_state_dict = torch.load(pretrain_yowov3)
+        # Load on CPU to support environments without CUDA
+        pretrain_state_dict = torch.load(pretrain_yowov3, map_location='cpu')
         flag = 0
         
         for param_name, value in pretrain_state_dict.items():

@@ -30,11 +30,22 @@ def detect(config):
 
     #########################################################################
     dataset = build_dataset(config, phase='test')
-    model   = build_yowov3(config) 
-    get_info(config, model)
+    model   = build_yowov3(config)
+    # Show FLOPs/Params on CPU (safer for MPS)
+    try:
+        get_info(config, model)
+    except Exception as e:
+        print(f"[warn] get_info skipped: {e}")
     ##########################################################################
+    # Select device: CUDA -> MPS -> CPU
+    device = (
+        torch.device("cuda") if torch.cuda.is_available() else
+        torch.device("mps") if hasattr(torch.backends, "mps") and torch.backends.mps.is_available() else
+        torch.device("cpu")
+    )
     mapping = config['idx2name']
-    model.to("cuda")
+    # Ensure float32 first, then move to device (for MPS compatibility)
+    model = model.to(dtype=torch.float32 if device.type == 'mps' else torch.float64).to(device)
     model.eval()
 
 
@@ -42,8 +53,12 @@ def detect(config):
         origin_image, clip, bboxes, labels = dataset.__getitem__(idx, get_origin_image=True)
         #print(bboxes)
 
-        clip = clip.unsqueeze(0).to("cuda")
-        outputs = model(clip)
+        clip = clip.unsqueeze(0).to(device=device, dtype=torch.float32 if device.type == 'mps' else torch.float64)
+        # Run model; if on MPS, move outputs to CPU for NMS ops
+        if device.type == 'mps':
+            outputs = model(clip).to('cpu')
+        else:
+            outputs = model(clip)
         outputs = non_max_suppression(outputs, conf_threshold=0.3, iou_threshold=0.5)[0]
 
         origin_image = cv2.resize(origin_image, (config['img_size'], config['img_size']))

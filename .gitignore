@@ -11,7 +11,8 @@ weights/
 testing_code/
 lab/
 lab.py
-
+checkpoint/
+toyota_smarthome/
 # Distribution / packaging
 .Python
 build/

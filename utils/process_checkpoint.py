@@ -1,7 +1,8 @@
 import torch
 
 def load_checkpoint(path):
-    checkpoint_dict = torch.load(path)
+    # Map to CPU to be robust across environments
+    checkpoint_dict = torch.load(path, map_location='cpu')
     config          = checkpoint_dict['config']
     state_dict      = checkpoint_dict['state_dict']
     ema_state_dict  = checkpoint_dict['ema_state_dict']

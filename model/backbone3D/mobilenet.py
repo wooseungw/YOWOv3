@@ -72,8 +72,8 @@ class MobileNet(nn.Module):
     def load_pretrain(self):
         
         state_dict = self.state_dict()
-
-        pretrain_state_dict = torch.load(self.pretrain_path)
+        # Map to CPU to avoid CUDA deserialization on CPU-only machines
+        pretrain_state_dict = torch.load(self.pretrain_path, map_location='cpu')
 
         for param_name, value in pretrain_state_dict['state_dict'].items():
             param_name = param_name.split('.', 1)[1] # param_name has 'module' at first!
