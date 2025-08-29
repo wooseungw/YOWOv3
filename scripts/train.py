@@ -43,13 +43,31 @@ def train_model(config):
     # create dataloader, model, criterion
     ####################################################
     dataset = build_dataset(config, phase='train')
-    
-    dataloader = data.DataLoader(dataset, config['batch_size'], True, collate_fn=collate_fn
-                                 , num_workers=config['num_workers'], pin_memory=True)
-    
+
+    # Select device: prefer CUDA, then MPS, then CPU
+    if torch.cuda.is_available():
+        device = torch.device('cuda')
+    elif getattr(torch.backends, 'mps', None) and torch.backends.mps.is_available():
+        device = torch.device('mps')
+    else:
+        device = torch.device('cpu')
+
+    dataloader = data.DataLoader(
+        dataset,
+        config['batch_size'],
+        True,
+        collate_fn=collate_fn,
+        num_workers=config['num_workers'],
+        pin_memory=True if device.type == 'cuda' else False,
+    )
+
     model = build_yowov3(config)
     get_info(config, model)
-    model.to("cuda")
+    # On MPS, enforce float32 dtype for model parameters; otherwise keep defaults
+    if device.type == 'mps':
+        model = model.to(device=device, dtype=torch.float32)
+    else:
+        model = model.to(device=device)
     model.train()
     
     criterion = build_loss(model, config)
@@ -80,7 +98,8 @@ def train_model(config):
     lr_decay          = config['lr_decay']
     save_folder       = config['save_folder']
     
-    torch.backends.cudnn.benchmark = True
+    if device.type == 'cuda':
+        torch.backends.cudnn.benchmark = True
     cur_epoch = 1
     loss_acc = 0.0
     ema = EMA(model)
@@ -90,10 +109,13 @@ def train_model(config):
         for iteration, (batch_clip, batch_bboxes, batch_labels) in enumerate(dataloader): 
 
             batch_size   = batch_clip.shape[0]
-            batch_clip   = batch_clip.to("cuda")
+            if device.type == 'mps':
+                batch_clip = batch_clip.to(device=device, dtype=torch.float32)
+            else:
+                batch_clip = batch_clip.to(device=device)
             for idx in range(batch_size):
-                batch_bboxes[idx]       = batch_bboxes[idx].to("cuda")
-                batch_labels[idx]       = batch_labels[idx].to("cuda")
+                batch_bboxes[idx] = batch_bboxes[idx].to(device=device)
+                batch_labels[idx] = batch_labels[idx].to(device=device)
 
             outputs = model(batch_clip)
 
@@ -101,7 +123,7 @@ def train_model(config):
             for i, (bboxes, labels) in enumerate(zip(batch_bboxes, batch_labels)):
                 nbox = bboxes.shape[0]
                 nclass = labels.shape[1]
-                target = torch.Tensor(nbox, 5 + nclass)
+                target = torch.empty(nbox, 5 + nclass, device=device)
                 target[:, 0] = i
                 target[:, 1:5] = bboxes
                 target[:, 5:] = labels

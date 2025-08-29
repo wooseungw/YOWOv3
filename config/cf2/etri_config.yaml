@@ -1,6 +1,6 @@
 BACKBONE2D:
   YOLOv8:
-    ver : x
+    ver : n
 
     PRETRAIN:
       n : weights/backbone2D/YOLOv8/v8_n.pth
@@ -114,3 +114,5 @@ participants      : P01          # or comma-separated e.g. "P01,P02"
 key_stride        : 1            # sample every N-th key frame from skeleton CSV
 bbox_padding      : 0.15         # padding ratio around skeleton bbox
 use_bodyindex_scale: true        # scale depth coords to RGB using BodyIndex PNG size
+min_box_size_ratio : 0.05        # enforce minimum bbox size as ratio of frame
+bbox_square        : false        # force square boxes for clearer viz
