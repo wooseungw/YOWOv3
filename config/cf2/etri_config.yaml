@@ -1,6 +1,6 @@
 BACKBONE2D:
   YOLOv8:
-    ver : n
+    ver : x
 
     PRETRAIN:
       n : weights/backbone2D/YOLOv8/v8_n.pth
