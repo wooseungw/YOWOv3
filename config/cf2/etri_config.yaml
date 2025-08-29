@@ -77,6 +77,21 @@ LOSS:
     scale_box_loss : 7.5
     scale_dfl_loss : 1.5
 
+  SIMOTA:
+    top_k  : 10
+    gamma  : 0.5
+    radius : 2.5
+    mode   : unbalance
+    soft_label : True
+
+    dynamic_k     : False 
+    dynamic_top_k : 10
+
+    scale_cls_loss : 0.5
+    scale_box_loss : 5.0
+    scale_dfl_loss : 0.5
+
+
 config_path       : config/cf2/etri_config.yaml
 dataset           : etri
 loss              : tal
@@ -103,11 +118,11 @@ lr                : 0.00001
 weight_decay      : 0.0005
 max_step_warmup   : 500
 adjustlr_schedule : [1, 2, 3, 4, 5]
-max_epoch         : 7
+max_epoch         : 9
 lr_decay          : 0.5
 save_folder       : weights/model_checkpoint
 sampling_rate     : 1
-label_map         : config/etri_idx2name_ko.yaml
+label_map         : config/etri_idx2name_en.yaml
 
 # ETRI dataset options
 participants      : P01          # or comma-separated e.g. "P01,P02"
